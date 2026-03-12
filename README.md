@@ -2,13 +2,21 @@
 
 # zeptofetch-u
 
-A minimal system information tool for Linux. Written in C, no dependencies, runs in **~200 µs**.
+A minimal system information tool for Linux. Written in C, no dependencies, runs in **~200 µs.**
+
+The *u* stands for ultra — the faster, leaner sibling of [zeptofetch](https://github.com/Gur0v/zeptofetch).
 
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](https://github.com/Gur0v/zeptofetch-u/blob/main/LICENSE)
 [![Language: C](https://img.shields.io/badge/language-C-blue.svg)]()
 [![Latest Release](https://img.shields.io/github/v/release/Gur0v/zeptofetch-u?sort=semver)](https://github.com/Gur0v/zeptofetch-u/releases)
 
 </div>
+
+## What is this?
+
+zeptofetch-u is a speed-focused variant of zeptofetch. It trades zeptofetch's robustness and feature coverage for the absolute lowest possible runtime — no process tree walking, no caching, no detection logic. If you want the full experience, use [zeptofetch](https://github.com/Gur0v/zeptofetch). If you want it *fast*, use this.
+
+**4.77x faster. ~100 lines. Zero compromises on what it does do.**
 
 ## Benchmarks
 
@@ -34,18 +42,32 @@ Tested with [hyperfine](https://github.com/sharkdp/hyperfine).
 
 </details>
 
-## Why it's faster
+## zeptofetch-u vs zeptofetch
 
-**zeptofetch-u vs zeptofetch:**
+zeptofetch-u is not a replacement — it's what happens when you take zeptofetch and ask *"what's the absolute minimum needed to show the same output?"*
 
-- **No process tree walking** — zeptofetch builds a full chain of parent processes. zeptofetch-u reads environment variables.
-- **No caching** — zeptofetch allocates a 256-entry mmap cache. zeptofetch-u keeps everything on the stack.
-- **No process enumeration** — zeptofetch scans `/proc` for window managers. zeptofetch-u checks `$DESKTOP_SESSION` only.
-- **No feature detection** — zeptofetch detects SSH, WSL, containers, privileged execution. zeptofetch-u doesn't.
-- **Smaller binary** — 119 lines vs 800+. Better instruction cache locality.
-- **Aggressive optimization** — Full LTO, section gc, instruction-level optimizations via clang.
+| | zeptofetch | zeptofetch-u |
+|---|---|---|
+| Process tree walking | ✓ | — |
+| mmap cache | ✓ | — |
+| SSH / WSL / container detection | ✓ | — |
+| `/proc` enumeration for WM | ✓ | — |
+| Privileged execution detection | ✓ | — |
+| Mean runtime | ~1.5 ms | ~230 µs |
+| LOC | ~600 | ~100 |
 
-Result: **4.77x faster** on the same hardware, doing less work, with a simpler codebase.
+Everything zeptofetch-u drops was a deliberate tradeoff. The output is the same on a standard desktop setup — it just gets there faster by doing less.
+
+## How it works
+
+Where zeptofetch walks process trees and scans `/proc`, zeptofetch-u reads directly and exits.
+
+- **OS** — Parses `PRETTY_NAME` from `/etc/os-release`
+- **Kernel / Host** — `uname()` syscall
+- **Shell** — `$SHELL` environment variable
+- **WM** — `$DESKTOP_SESSION` or `$XDG_CURRENT_DESKTOP`
+- **Terminal** — Parent process lookup via `/proc`
+- **Output** — Batched into a single `write()` syscall
 
 ## Installation
 
@@ -57,17 +79,7 @@ make
 sudo make install
 ```
 
-Requires **clang**. GCC is not supported.
-
-## How it works
-
-**Direct syscalls only.** No process walking, no caching tables, no memory maps.
-
-- **Shell** — `$SHELL` environment variable
-- **Terminal** — Parent process `/proc` inspection + `$DESKTOP_SESSION`, `$XDG_CURRENT_DESKTOP`
-- **WM** — Environment variables, fallback to "Unknown"
-- **OS** — Parses `PRETTY_NAME` from `/etc/os-release`
-- **Kernel/Host** — `uname()` syscall
+Requires **clang**. Built with full LTO, section GC, and instruction-level optimizations. GCC is not supported.
 
 ## Requirements
 
