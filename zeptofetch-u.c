@@ -6,11 +6,11 @@
 #include <fcntl.h>
 #include <sys/utsname.h>
 
-#define VERSION "v1.0-r1"
+#define VERSION "v1.0"
 
 #define C1 "\033[1;34m"
 #define C2 "\033[1;37m"
-#define C3 "\033[38;5;208m"
+#define C3 "\033[1;38;5;208m"
 #define CR "\033[0m"
 
 #define W(s) write(1, s, sizeof(s) - 1)
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
     write(1, u.release, strlen(u.release));
     W("\n");
     
-    W(C1 " ( " C2 "/  \\ " C1 "/" CR "|   " C3 "Shell:" CR " ");
+    W(C1 " ( " C2 "/  \\ " C1 "/|" CR "   " C3 "Shell:" CR " ");
     write(1, sh, strlen(sh));
     W("\n");
     
