@@ -6,14 +6,34 @@
 #include <fcntl.h>
 #include <sys/utsname.h>
 
-#define VERSION "v1.0"
+#define VERSION "v1.1"
 
 #define C1 "\033[1;34m"
 #define C2 "\033[1;37m"
 #define C3 "\033[1;38;5;208m"
 #define CR "\033[0m"
 
-#define W(s) write(1, s, sizeof(s) - 1)
+static char out[2048];
+static int olen = 0;
+
+static void emit(const char *s, int n) {
+    if (olen + n < (int)sizeof(out)) {
+        memcpy(out + olen, s, n);
+        olen += n;
+    }
+}
+
+#define W(s)     emit(s, sizeof(s) - 1)
+#define WS(s, n) emit(s, n)
+
+static ssize_t read_file(const char *path, char *buf, size_t sz) {
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) return -1;
+    ssize_t n = read(fd, buf, sz - 1);
+    close(fd);
+    if (n > 0) buf[n] = 0;
+    return n;
+}
 
 int main(int argc, char **argv) {
     if (argc > 1 && (!strcmp(argv[1], "--version") || !strcmp(argv[1], "-v"))) {
@@ -21,25 +41,20 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    char os[64] = "Linux";
     char buf[512];
-    
-    int fd = open("/etc/os-release", O_RDONLY);
-    if (fd >= 0) {
-        ssize_t n = read(fd, buf, 511);
-        close(fd);
-        if (n > 0) {
-            buf[n] = 0;
-            char *p = strstr(buf, "PRETTY_NAME=\"");
-            if (!p) p = strstr(buf, "PRETTY_NAME='");
-            if (p) {
-                p += 13;
-                char *e = strchr(p, p[-1]);
-                if (e && e - p < 64) {
-                    size_t l = e - p;
-                    memcpy(os, p, l);
-                    os[l] = 0;
-                }
+    char os[64] = "Linux";
+    size_t os_len = 5;
+
+    if (read_file("/etc/os-release", buf, sizeof(buf)) > 0) {
+        char *p = strstr(buf, "PRETTY_NAME=");
+        if (p) {
+            p += 12;
+            char q = (*p == '"' || *p == '\'') ? *p++ : 0;
+            char *e = q ? strchr(p, q) : strpbrk(p, "\n");
+            if (e && (size_t)(e - p) < sizeof(os)) {
+                os_len = e - p;
+                memcpy(os, p, os_len);
+                os[os_len] = 0;
             }
         }
     }
@@ -60,31 +75,28 @@ int main(int argc, char **argv) {
     char *wm = getenv("DESKTOP_SESSION");
     if (!wm) wm = getenv("XDG_CURRENT_DESKTOP");
     if (wm) {
-        char *b = strrchr(wm, '/');
-        wm = b ? b + 1 : wm;
+        if (strchr(wm, '/')) wm = strrchr(wm, '/') + 1;
         if (!strcmp(wm, "plasma")) wm = "kwin";
     } else wm = "Unknown";
 
-    char term[64] = "Unknown";
-    char path[64], buf2[512];
+    char *term = "Unknown";
+    size_t term_len = 7;
+    char path[64];
+
     snprintf(path, sizeof(path), "/proc/%d/stat", getppid());
-    fd = open(path, O_RDONLY);
-    if (fd >= 0) {
-        ssize_t n = read(fd, buf2, 511);
-        close(fd);
-        if (n > 0) {
-            buf2[n] = 0;
-            char *p = strrchr(buf2, ')');
-            if (p) {
-                int term_pid;
-                if (sscanf(p + 2, "%*c %d", &term_pid) == 1) {
-                    snprintf(path, sizeof(path), "/proc/%d/exe", term_pid);
-                    n = readlink(path, buf2, sizeof(buf2) - 1);
-                    if (n > 0) {
-                        buf2[n] = 0;
-                        char *b = strrchr(buf2, '/');
-                        strncpy(term, b ? b + 1 : buf2, sizeof(term) - 1);
-                    }
+    ssize_t n = read_file(path, buf, sizeof(buf));
+    if (n > 0) {
+        char *p = strrchr(buf, ')');
+        if (p) {
+            int term_pid;
+            if (sscanf(p + 2, "%*c %d", &term_pid) == 1) {
+                snprintf(path, sizeof(path), "/proc/%d/exe", term_pid);
+                n = readlink(path, buf, sizeof(buf) - 1);
+                if (n > 0) {
+                    buf[n] = 0;
+                    char *b = strrchr(buf, '/');
+                    if (b) { term = b + 1; term_len = n - (b + 1 - buf); }
+                    else   { term = buf;   term_len = n; }
                 }
             }
         }
@@ -95,33 +107,21 @@ int main(int argc, char **argv) {
     if (tlen < 0) tlen = 0;
     if (tlen > 127) tlen = 127;
 
-    W(C1 "    ___ " CR "     " C1);
-    write(1, title, tlen);
-    W(CR "\n");
-    
-    W(C1 "   (" C2 ".· " C1 "|" CR "     ");
-    for (int i = 0; i < tlen; i++) write(1, "-", 1);
-    W("\n");
-    
-    W(C1 "   (" C3 "<>" CR " " C1 "|" CR "     " C3 "OS:" CR " ");
-    write(1, os, strlen(os));
-    W("\n");
-    
-    W(C1 "  / " C2 "__  " C1 "\\" CR "    " C3 "Kernel:" CR " ");
-    write(1, u.release, strlen(u.release));
-    W("\n");
-    
-    W(C1 " ( " C2 "/  \\ " C1 "/|" CR "   " C3 "Shell:" CR " ");
-    write(1, sh, strlen(sh));
-    W("\n");
-    
-    W(C3 "_" C1 "/\\ " C2 "__)" C1 "/" C3 "_" C1 ")" CR "   " C3 "WM:" CR " ");
-    write(1, wm, strlen(wm));
-    W("\n");
-    
-    W(C1 C3 "\\/" C1 "-____" C3 "\\/" CR "    " C3 "Terminal:" CR " ");
-    write(1, term, strlen(term));
-    W("\n\n");
+    char dashes[128];
+    memset(dashes, '-', tlen);
 
+    size_t sh_len     = strlen(sh);
+    size_t wm_len     = strlen(wm);
+    size_t kernel_len = strlen(u.release);
+
+    W(C1 "    ___ " CR "     " C1); WS(title, tlen);          W(CR "\n");
+    W(C1 "   (" C2 ".· " C1 "|" CR "     ");  WS(dashes, tlen);          W("\n");
+    W(C1 "   (" C3 "<>" CR " " C1 "|" CR "     " C3 "OS:" CR " ");        WS(os, os_len);        W("\n");
+    W(C1 "  / " C2 "__  " C1 "\\" CR "    " C3 "Kernel:" CR " ");         WS(u.release, kernel_len); W("\n");
+    W(C1 " ( " C2 "/  \\ " C1 "/|" CR "   " C3 "Shell:" CR " ");          WS(sh, sh_len);        W("\n");
+    W(C3 "_" C1 "/\\ " C2 "__)" C1 "/" C3 "_" C1 ")" CR "   " C3 "WM:" CR " "); WS(wm, wm_len); W("\n");
+    W(C1 C3 "\\/" C1 "-____" C3 "\\/" CR "    " C3 "Terminal:" CR " ");   WS(term, term_len);    W("\n\n");
+
+    write(1, out, olen);
     return 0;
 }
