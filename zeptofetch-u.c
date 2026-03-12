@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <sys/utsname.h>
 
-#define VERSION "v1.0"
+#define VERSION "v1.0-r1"
 
 #define C1 "\033[1;34m"
 #define C2 "\033[1;37m"
