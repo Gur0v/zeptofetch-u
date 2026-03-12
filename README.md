@@ -2,7 +2,7 @@
 
 # zeptofetch-u
 
-A minimal system information tool for Linux. Written in C, no dependencies, runs in **~300 µs**.
+A minimal system information tool for Linux. Written in C, no dependencies, runs in **~200 µs**.
 
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](https://github.com/Gur0v/zeptofetch-u/blob/main/LICENSE)
 [![Language: C](https://img.shields.io/badge/language-C-blue.svg)]()
@@ -16,7 +16,7 @@ Tested with [hyperfine](https://github.com/sharkdp/hyperfine).
 
 | Tool | Mean |
 |---|---|
-| **zeptofetch-u** | **308.4 µs ± 34.8 µs** |
+| **zeptofetch-u** | **230.2 µs ± 70.8 µs** |
 | zeptofetch | 1.5 ms ± 0.1 ms |
 | fastfetch | 12.5 ms ± 26.4 ms |
 | neofetch | 267.1 ms ± 25.6 ms |
@@ -28,7 +28,7 @@ Tested with [hyperfine](https://github.com/sharkdp/hyperfine).
 |---|---|
 | CPU | AMD Ryzen 5 5600 |
 | RAM | 32 GB DDR4 @ 3200 MHz |
-| Kernel | 6.19.6-gentoo-dist |
+| Kernel | 6.19.7-gentoo-dist |
 | OS | Gentoo Linux |
 | Desktop | KDE Plasma 6.5.5 (Wayland) |
 
