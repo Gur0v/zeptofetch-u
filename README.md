@@ -73,7 +73,7 @@ Requires **clang**. GCC is not supported.
 
 - Linux x86_64, kernel 2.6+
 - glibc, musl, or compatible libc
-- GCC or Clang
+- Clang
 
 ## License
 
