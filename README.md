@@ -24,8 +24,8 @@ Tested with [hyperfine](https://github.com/sharkdp/hyperfine).
 
 | Tool | Mean |
 |---|---|
-| **zeptofetch-u** | **230.2 µs ± 70.8 µs** |
-| zeptofetch | 1.5 ms ± 0.1 ms |
+| **zeptofetch-u** | **163.1 µs ± 38.3 µs** |
+| zeptofetch | 794.6 µs ±  57.8 µs |
 | fastfetch | 12.5 ms ± 26.4 ms |
 | neofetch | 267.1 ms ± 25.6 ms |
 
@@ -36,9 +36,9 @@ Tested with [hyperfine](https://github.com/sharkdp/hyperfine).
 |---|---|
 | CPU | AMD Ryzen 5 5600 |
 | RAM | 32 GB DDR4 @ 3200 MHz |
-| Kernel | 6.19.7-gentoo-dist |
-| OS | Gentoo Linux |
-| Desktop | KDE Plasma 6.5.5 (Wayland) |
+| Kernel | 6.19.8-lqx2-1-lqx |
+| OS | Arch Linux |
+| Desktop | KDE Plasma 6.6.3 (Wayland) |
 
 </details>
 
