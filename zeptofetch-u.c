@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <sys/utsname.h>
 
-#define VERSION "v1.1"
+#define VERSION "v1.1-r1"
 
 #define C1 "\033[1;34m"
 #define C2 "\033[1;37m"
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
     if (!wm) wm = getenv("XDG_CURRENT_DESKTOP");
     if (wm) {
         if (strchr(wm, '/')) wm = strrchr(wm, '/') + 1;
-        if (!strcmp(wm, "plasma")) wm = "kwin";
+        if (!strcmp(wm, "plasma.desktop")) wm = "kwin";
     } else wm = "Unknown";
 
     char *term = "Unknown";
