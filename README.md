@@ -14,9 +14,9 @@ The *u* stands for ultra — the faster, leaner sibling of [zeptofetch](https://
 
 ## What is this?
 
-zeptofetch-u is a speed-focused variant of zeptofetch. It trades zeptofetch's robustness and feature coverage for the absolute lowest possible runtime — no process tree walking, no caching, no detection logic. If you want the full experience, use [zeptofetch](https://github.com/Gur0v/zeptofetch). If you want it *fast*, use this.
+zeptofetch-u is a speed-focused variant of zeptofetch. It trades robustness and feature coverage for the absolute lowest possible runtime — no process tree walking, no caching, no detection logic. If you want the full experience, use [zeptofetch](https://github.com/Gur0v/zeptofetch). If you want it *fast*, use this.
 
-**4.77x faster. ~100 lines. Zero compromises on what it does do.**
+**4.87× faster. ~100 lines. Zero compromises on what it does do.**
 
 ## Benchmarks
 
@@ -25,7 +25,7 @@ Tested with [hyperfine](https://github.com/sharkdp/hyperfine).
 | Tool | Mean |
 |---|---|
 | **zeptofetch-u** | **163.1 µs ± 38.3 µs** |
-| zeptofetch | 794.6 µs ±  57.8 µs |
+| zeptofetch | 794.6 µs ± 57.8 µs |
 | fastfetch | 12.5 ms ± 26.4 ms |
 | neofetch | 267.1 ms ± 25.6 ms |
 
@@ -46,32 +46,32 @@ Tested with [hyperfine](https://github.com/sharkdp/hyperfine).
 
 zeptofetch-u is not a replacement — it's what happens when you take zeptofetch and ask *"what's the absolute minimum needed to show the same output?"*
 
-| | zeptofetch | zeptofetch-u |
+| Feature | zeptofetch | zeptofetch-u |
 |---|---|---|
 | Process tree walking | ✓ | — |
 | mmap cache | ✓ | — |
 | SSH / WSL / container detection | ✓ | — |
 | `/proc` enumeration for WM | ✓ | — |
 | Privileged execution detection | ✓ | — |
-| Mean runtime | ~1.5 ms | ~230 µs |
-| LOC | ~600 | ~100 |
+| Mean runtime | ~0.8 ms | ~160 µs |
+| Lines of code | ~600 | ~100 |
 
-Everything zeptofetch-u drops was a deliberate tradeoff. The output is the same on a standard desktop setup — it just gets there faster by doing less.
+Everything zeptofetch-u drops was a deliberate tradeoff. The output is identical on a standard desktop setup — it just gets there faster by doing less.
 
 ## How it works
 
 Where zeptofetch walks process trees and scans `/proc`, zeptofetch-u reads directly and exits.
 
-- **OS** — Parses `PRETTY_NAME` from `/etc/os-release`
-- **Kernel / Host** — `uname()` syscall
-- **Shell** — `$SHELL` environment variable
-- **WM** — `$DESKTOP_SESSION` or `$XDG_CURRENT_DESKTOP`
-- **Terminal** — Parent process lookup via `/proc`
-- **Output** — Batched into a single `write()` syscall
+| Field | Source |
+|---|---|
+| OS | `PRETTY_NAME` from `/etc/os-release` |
+| Kernel / Host | `uname()` syscall |
+| Shell | `$SHELL` environment variable |
+| WM | `$DESKTOP_SESSION` or `$XDG_CURRENT_DESKTOP` |
+| Terminal | Parent process lookup via `/proc` |
+| Output | Batched into a single `write()` syscall |
 
 ## Installation
-
-**From source:**
 ```bash
 git clone https://github.com/Gur0v/zeptofetch-u.git
 cd zeptofetch-u
