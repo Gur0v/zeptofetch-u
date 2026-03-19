@@ -54,7 +54,6 @@ zeptofetch-u is not a replacement — it's what happens when you take zeptofetch
 | `/proc` enumeration for WM | ✓ | — |
 | Privileged execution detection | ✓ | — |
 | Mean runtime | ~0.8 ms | ~160 µs |
-| Lines of code | ~600 | ~100 |
 
 Everything zeptofetch-u drops was a deliberate tradeoff. The output is identical on a standard desktop setup — it just gets there faster by doing less.
 
